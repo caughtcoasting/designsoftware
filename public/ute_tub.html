@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Ute Tub Layout Designer</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #e0e7ff, #f0f7f4);
+            height: 800px;
+            width: 1200px;
+            overflow: hidden;
+        }
+        #container {
+            position: relative;
+            width: 1200px;
+            height: 800px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        #gear-panel {
+            width: 250px;
+            height: 100%;
+            background: rgba(47, 79, 79, 0.9);
+            position: absolute;
+            left: 0;
+            top: 0;
+            border-right: 2px solid #4a7d7d;
+            box-shadow: 5px 0 10px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            color: white;
+        }
+        #navigation {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+        #circles {
+            display: flex;
+        }
+        .circle {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #fff;
+            margin: 0 5px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .circle.active {
+            transform: scale(1.2);
+        }
+        #pages-container {
+            flex: 1;
+            display: flex;
+            width: 750px;
+            transition: transform 0.3s ease;
+        }
+        .page {
+            width: 250px;
+            padding: 10px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        .page h3 {
+            margin: 0;
+            padding: 10px 0;
+        }
+        .item {
+            cursor: move;
+            border: none;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin: 20px auto;
+            background-repeat: no-repeat;
+            background-position: center;
+            text-align: center;
+            line-height: 1.5;
+        }
+        .item:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        #ute-tub-area {
+            width: 590px;
+            height: 571px;
+            position: absolute;
+            left: 430px;
+            top: 114px;
+            overflow: hidden;
+            border: none;
+            border-radius: 30px;
+            background: url('NavaraNP300UteTub.png') no-repeat center center;
+            background-size: 590px 571px;
+        }
+        .dropped-item, .custom-object {
+            position: absolute;
+            border: none;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        .bottom-layer {
+            z-index: 10;
+        }
+        .top-layer {
+            z-index: 20;
+        }
+        #layer-overlay {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(128, 128, 128, 0.8);
+            z-index: 15;
+        }
+        #dragging-item {
+            position: absolute;
+            border: none;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            display: none;
+            z-index: 25;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        #instructions {
+            position: absolute;
+            right: 50px;
+            top: 20px;
+            font-size: 16px;
+            color: #333333;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 8px 12px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .arrow {
+            background: none;
+            border: none;
+            color: #f0f7f4;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        #bottom-controls {
+            position: absolute;
+            left: 260px;
+            bottom: 10px;
+            padding: 10px;
+        }
+        #load-project-modal {
+            margin-top: 10px;
+        }
+        #controls {
+            position: absolute;
+            left: 725px;
+            top: 690px;
+            transform: translateX(-50%);
+            width: auto;
+            height: auto;
+            background: #fff;
+            border: 1px solid #ccc;
+            padding: 10px;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        .custom-object {
+            border: 1px solid #000;
+            cursor: move;
+            border-radius: 2px;
+        }
+        .object-name {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 8px;
+            color: #000;
+            pointer-events: none;
+        }
+        .resize-handle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #fff;
+            border: 1px solid #000;
+            cursor: nwse-resize;
+            right: -5px;
+            bottom: -5px;
+        }
+        #color-palette {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .color-option {
+            width: 30px;
+            height: 30px;
+            margin: 5px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+        }
+        #controls input {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+        #controls button {
+            padding: 5px 10px;
+            background: #006600;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .out-of-bounds {
+            position: absolute;
+            pointer-events: none;
+        }
+        #layer-controls {
+            position: absolute;
+            left: 1050px;
+            top: 300px;
+        }
+        #layer-switch {
+            position: absolute;
+            left: 1050px;
+            top: 350px;
+            display: none;
+        }
+        #layer-switch button {
+            display: block;
+            margin-bottom: 20px;
+        }
+        #save-load-controls {
+            position: absolute;
+            right: 20px;
+            bottom: 20px;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="container">
+        <div id="ute-tub-area">
+            <!-- Wheel Arch: Top Left -->
+            <div class="out-of-bounds" style="left: 0px; top: 18px; width: 79px; height: 275px; border-radius: 30px;"></div>
+            <!-- Wheel Arch: Top Right -->
+            <div class="out-of-bounds" style="left: 511px; top: 18px; width: 79px; height: 275px; border-radius: 30px;"></div>
+        </div>
+        <div id="gear-panel">
+            <div id="navigation">
+                <button class="arrow" id="left-arrow">←</button>
+                <div id="circles">
+                    <div class="circle active" data-page="0"></div>
+                    <div class="circle" data-page="1"></div>
+                    <div class="circle" data-page="2"></div>
+                </div>
+                <button class="arrow" id="right-arrow">→</button>
+            </div>
+            <div id="pages-container">
+                <div class="page" id="electrical"></div>
+                <div class="page" id="water"></div>
+                <div class="page" id="storage"></div>
+            </div>
+        </div>
+        <div id="dragging-item"></div>
+        <div id="instructions">Drag items into the Ute Tub — right-click to return to gear panel!<br>Custom objects: right-click to remove, resize on edges.</div>
+        <div id="bottom-controls">
+            <button id="custom-object-btn">Custom Object</button>
+        </div>
+        <div id="controls"></div>
+        <div id="layer-controls">
+            <button id="new-layer-btn">New Layer</button>
+        </div>
+        <div id="layer-switch">
+            <button id="bottom-layer-btn">Bottom Layer</button>
+            <button id="top-layer-btn">Top Layer</button>
+            <button id="delete-top-layer-btn">Delete Top Layer</button>
+        </div>
+        <div id="save-load-controls">
+            <button id="save-project-btn">Save Project</button>
+            <button id="load-project-btn">Load Project</button>
+            <div id="load-project-modal" style="display: none;">
+                <select id="project-select"></select>
+                <button id="load-selected-project">Load Selected Project</button>
+                <button id="close-load-modal">Close</button>
+            </div>
+        </div>
+    </div>
+<script>
+    const items = {
+        'water-tank': { id: 'water-tank', src: '43LWaterTank.png', width: 182, height: 62, category: 'water' },
+        'water-tank-2': { id: 'water-tank-2', src: '43LWaterTank.png', width: 182, height: 62, category: 'water' },
+        'battery': { id: 'battery', src: 'Battery140AH.png', width: 59, height: 92, category: 'electrical' },
+        'fridge': { id: 'fridge', src: '85LFridge.png', width: 203, height: 345, category: 'electrical' },
+        'drawer': { id: 'drawer', src: 'Drawer.png', width: 118, height: 224, category: 'storage' },
+        'fridge-60l': { id: 'fridge-60l', src: '60LFridge.png', width: 100, height: 200, category: 'electrical' }
+    };
+
+    const pastelColors = ['#FFB3BA', '#FFDFBA', '#FFFFBA', '#BAFFC9', '#BAE1FF', '#E2BAFF', '#FFD1DC', '#E6E6FA'];
+
+    const uteTubArea = document.getElementById('ute-tub-area');
+    const gearPanel = document.getElementById('gear-panel');
+    const draggingItem = document.getElementById('dragging-item');
+    const TUB_WIDTH = 590;
+    const TUB_HEIGHT = 571;
+    const CORNER_RADIUS = 30;
+    const WHEEL_ARCH_BOTTOM = 293; // Top: 18px + Height: 275px
+    const outOfBoundsAreas = document.querySelectorAll('.out-of-bounds');
+
+    let layers = {
+        bottom: { draggedItems: {}, customObjects: [] },
+        top: { draggedItems: {}, customObjects: [] }
+    };
+    let activeLayer = 'bottom';
+    let hasTopLayer = false;
+    let isDragging = false;
+    let currentItem = null;
+    let offsetX, offsetY;
+    let hasDragged = false;
+    let isDrawing = false;
+    let startX, startY;
+    let currentCustomObject = null;
+    let isResizing = false;
+    let initialWidth, initialHeight;
+    let maxWidth, maxHeight;
+    let isCustomizing = false;
+    let currentPage = 0;
+    const pages = document.querySelectorAll('.page');
+    const circles = document.querySelectorAll('.circle');
+
+    let bottomAvailableItems = Object.keys(items).slice();
+    let topAvailableItems = Object.keys(items).slice();
+
+    // Helper function to get the rectangle of an object
+    function getRect(obj) {
+        return {
+            left: parseFloat(obj.style.left) || 0,
+            top: parseFloat(obj.style.top) || 0,
+            right: (parseFloat(obj.style.left) || 0) + (parseFloat(obj.style.width) || 0),
+            bottom: (parseFloat(obj.style.top) || 0) + (parseFloat(obj.style.height) || 0)
+        };
+    }
+
+    // Check if a point is inside a rounded rectangle
+    function isPointInRoundedRect(px, py, rx, ry, rw, rh, r) {
+        if (py > ry + r && py < ry + rh - r && px > rx && px < rx + rw) return true;
+        if (px > rx + r && px < rx + rw - r && py > ry && py < ry + rh) return true;
+        if (px <= rx + r && py <= ry + r && (px - (rx + r)) ** 2 + (py - (ry + r)) ** 2 <= r ** 2) return true;
+        if (px >= rx + rw - r && py <= ry + r && (px - (rx + rw - r)) ** 2 + (py - (ry + r)) ** 2 <= r ** 2) return true;
+        if (px <= rx + r && py >= ry + rh - r && (px - (rx + r)) ** 2 + (py - (ry + rh - r)) ** 2 <= r ** 2) return true;
+        if (px >= rx + rw - r && py >= ry + rh - r && (px - (rx + rw - r)) ** 2 + (py - (ry + rh - r)) ** 2 <= r ** 2) return true;
+        return false;
+    }
+
+    // Check if an object overlaps with a rounded rectangle (wheel arch)
+    function isObjectOverlappingRoundedRect(obj, rx, ry, rw, rh, r) {
+        const objRect = getRect(obj);
+        const step = 5;
+        for (let x = objRect.left; x <= objRect.right; x += step) {
+            if (isPointInRoundedRect(x, objRect.top, rx, ry, rw, rh, r) || isPointInRoundedRect(x, objRect.bottom, rx, ry, rw, rh, r)) return true;
+        }
+        for (let y = objRect.top; y <= objRect.bottom; y += step) {
+            if (isPointInRoundedRect(objRect.left, y, rx, ry, rw, rh, r) || isPointInRoundedRect(objRect.right, y, rx, ry, rw, rh, r)) return true;
+        }
+        return false;
+    }
+
+    // Clamp position to tub boundaries, including rounded corners
+    function clampToBoundary(x, y, width, height) {
+        let clampedX = x;
+        let clampedY = y;
+        const r = CORNER_RADIUS;
+
+        clampedX = Math.max(0, Math.min(clampedX, TUB_WIDTH - width));
+        clampedY = Math.max(0, Math.min(clampedY, TUB_HEIGHT - height));
+
+        if (clampedX < r && clampedY < r) {
+            const dx = r - clampedX;
+            const dy = r - clampedY;
+            if (dx * dx + dy * dy > r * r) {
+                const angle = Math.atan2(dy, dx);
+                clampedX = r - r * Math.cos(angle);
+                clampedY = r - r * Math.sin(angle);
+            }
+        } else if (clampedX + width > TUB_WIDTH - r && clampedY < r) {
+            const dx = (clampedX + width) - (TUB_WIDTH - r);
+            const dy = r - clampedY;
+            if (dx * dx + dy * dy > r * r) {
+                const angle = Math.atan2(dy, dx);
+                clampedX = TUB_WIDTH - r + r * Math.cos(angle) - width;
+                clampedY = r - r * Math.sin(angle);
+            }
+        } else if (clampedX < r && clampedY + height > TUB_HEIGHT - r) {
+            const dx = r - clampedX;
+            const dy = (clampedY + height) - (TUB_HEIGHT - r);
+            if (dx * dx + dy * dy > r * r) {
+                const angle = Math.atan2(dy, dx);
+                clampedX = r - r * Math.cos(angle);
+                clampedY = TUB_HEIGHT - r + r * Math.sin(angle) - height;
+            }
+        } else if (clampedX + width > TUB_WIDTH - r && clampedY + height > TUB_HEIGHT - r) {
+            const dx = (clampedX + width) - (TUB_WIDTH - r);
+            const dy = (clampedY + height) - (TUB_HEIGHT - r);
+            if (dx * dx + dy * dy > r * r) {
+                const angle = Math.atan2(dy, dx);
+                clampedX = TUB_WIDTH - r + r * Math.cos(angle) - width;
+                clampedY = TUB_HEIGHT - r + r * Math.sin(angle) - height;
+            }
+        }
+        return { clampedX, clampedY };
+    }
+
+    // Check if two rectangles overlap
+    function checkOverlap(item1, item2) {
+        const rect1 = getRect(item1);
+        const rect2 = getRect(item2);
+        return !(rect1.right <= rect2.left || rect1.left >= rect2.right || rect1.bottom <= rect2.top || rect1.top >= rect2.bottom);
+    }
+
+    // Check if an item has any overlaps with other items or wheel arches in its layer
+    function hasOverlaps(item) {
+        const layer = item.dataset.layer;
+        const layerData = layers[layer];
+        const itemRect = getRect(item);
+
+        // Check overlap with other items in the same layer
+        for (const [key, otherItem] of Object.entries(layerData.draggedItems)) {
+            if (item === otherItem) continue;
+            if (checkOverlap(item, otherItem)) return true;
+        }
+        for (const obj of layerData.customObjects) {
+            if (item === obj) continue;
+            if (checkOverlap(item, obj)) return true;
+        }
+
+        // Check wheel arches for bottom layer only
+        if (layer === 'bottom') {
+            for (const area of outOfBoundsAreas) {
+                const areaRect = getRect(area);
+                const r = 30;
+                // Only consider overlap if item is above wheel arch bottom
+                if (itemRect.top < WHEEL_ARCH_BOTTOM && 
+                    isObjectOverlappingRoundedRect(item, areaRect.left, areaRect.top, areaRect.right - areaRect.left, areaRect.bottom - areaRect.top, r)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    // Resolve overlaps with other objects and wheel arches in the same layer
+    function resolveOverlaps(movingItem, proposedX, proposedY, width, height) {
+        const layer = movingItem.dataset.layer;
+        let newX = proposedX;
+        let newY = proposedY;
+        let iterations = 0;
+        const MAX_ITERATIONS = 50;
+        let hasAdjusted = true;
+
+        while (hasAdjusted && iterations < MAX_ITERATIONS) {
+            hasAdjusted = false;
+
+            let { clampedX, clampedY } = clampToBoundary(newX, newY, width, height);
+            newX = clampedX;
+            newY = clampedY;
+            movingItem.style.left = newX + 'px';
+            movingItem.style.top = newY + 'px';
+
+            const layerData = layers[layer];
+            for (const [key, item] of Object.entries(layerData.draggedItems)) {
+                if (item === movingItem) continue;
+                const movingRect = { left: newX, top: newY, right: newX + width, bottom: newY + height };
+                const itemRect = getRect(item);
+                const overlapX = Math.min(movingRect.right, itemRect.right) - Math.max(movingRect.left, itemRect.left);
+                const overlapY = Math.min(movingRect.bottom, itemRect.bottom) - Math.max(movingRect.top, itemRect.top);
+                if (overlapX > 0 && overlapY > 0) {
+                    hasAdjusted = true;
+                    const mtvX = overlapX < overlapY ? (movingRect.left < itemRect.left ? -overlapX : overlapX) : 0;
+                    const mtvY = overlapY < overlapX ? (movingRect.top < itemRect.top ? -overlapY : overlapY) : 0;
+                    if (mtvX !== 0) newX += mtvX;
+                    else if (mtvY !== 0) newY += mtvY;
+                    ({ clampedX, clampedY } = clampToBoundary(newX, newY, width, height));
+                    newX = clampedX;
+                    newY = clampedY;
+                    movingItem.style.left = newX + 'px';
+                    movingItem.style.top = newY + 'px';
+                }
+            }
+
+            for (const obj of layerData.customObjects) {
+                if (obj === movingItem) continue;
+                const movingRect = { left: newX, top: newY, right: newX + width, bottom: newY + height };
+                const itemRect = getRect(obj);
+                const overlapX = Math.min(movingRect.right, itemRect.right) - Math.max(movingRect.left, itemRect.left);
+                const overlapY = Math.min(movingRect.bottom, itemRect.bottom) - Math.max(movingRect.top, itemRect.top);
+                if (overlapX > 0 && overlapY > 0) {
+                    hasAdjusted = true;
+                    const mtvX = overlapX < overlapY ? (movingRect.left < itemRect.left ? -overlapX : overlapX) : 0;
+                    const mtvY = overlapY < overlapX ? (movingRect.top < itemRect.top ? -overlapY : overlapY) : 0;
+                    if (mtvX !== 0) newX += mtvX;
+                    else if (mtvY !== 0) newY += mtvY;
+                    ({ clampedX, clampedY } = clampToBoundary(newX, newY, width, height));
+                    newX = clampedX;
+                    newY = clampedY;
+                    movingItem.style.left = newX + 'px';
+                    movingItem.style.top = newY + 'px';
+                }
+            }
+
+            if (layer === 'bottom') {
+                for (const area of outOfBoundsAreas) {
+                    const areaRect = getRect(area);
+                    const r = 30;
+                    if (newY < WHEEL_ARCH_BOTTOM && 
+                        isObjectOverlappingRoundedRect(movingItem, areaRect.left, areaRect.top, areaRect.right - areaRect.left, areaRect.bottom - areaRect.top, r)) {
+                        hasAdjusted = true;
+                        if (areaRect.left < TUB_WIDTH / 2) {
+                            newX = Math.max(newX, areaRect.right);
+                        } else {
+                            newX = Math.min(newX, areaRect.left - width);
+                        }
+                        ({ clampedX, clampedY } = clampToBoundary(newX, newY, width, height));
+                        newX = clampedX;
+                        newY = clampedY;
+                        movingItem.style.left = newX + 'px';
+                        movingItem.style.top = newY + 'px';
+                    }
+                }
+            }
+
+            iterations++;
+        }
+
+        const { clampedX, clampedY } = clampToBoundary(newX, newY, width, height);
+        movingItem.style.left = clampedX + 'px';
+        movingItem.style.top = clampedY + 'px';
+    }
+
+    // Check if a position is within the corner radius areas
+    function isInCornerRadius(x, y, width, height) {
+        const right = x + width;
+        const bottom = y + height;
+        const r = CORNER_RADIUS;
+
+        if (x < r && y < r) {
+            const dx = r - x;
+            const dy = r - y;
+            if (dx * dx + dy * dy > r * r) return true;
+        }
+        if (right > TUB_WIDTH - r && y < r) {
+            const dx = right - (TUB_WIDTH - r);
+            const dy = r - y;
+            if (dx * dx + dy * dy > r * r) return true;
+        }
+        if (x < r && bottom > TUB_HEIGHT - r) {
+            const dx = r - x;
+            const dy = bottom - (TUB_HEIGHT - r);
+            if (dx * dx + dy * dy > r * r) return true;
+        }
+        if (right > TUB_WIDTH - r && bottom > TUB_HEIGHT - r) {
+            const dx = right - (TUB_WIDTH - r);
+            const dy = bottom - (TUB_HEIGHT - r);
+            if (dx * dx + dy * dy > r * r) return true;
+        }
+        return false;
+    }
+
+    // Initialize gear panel dynamically for a specific layer
+    function updateGearPanel(layer) {
+        const availableItems = layer === 'bottom' ? bottomAvailableItems : topAvailableItems;
+        pages.forEach(page => {
+            page.innerHTML = '';
+            const category = page.id;
+            const h3 = document.createElement('h3');
+            h3.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+            page.appendChild(h3);
+            availableItems.forEach(key => {
+                if (items[key].category === category) {
+                    const item = document.createElement('div');
+                    item.id = key;
+                    item.className = 'item';
+                    item.style.width = items[key].width + 'px';
+                    item.style.height = items[key].height + 'px';
+                    item.style.backgroundImage = `url('${items[key].src}')`;
+                    item.style.backgroundSize = `${items[key].width}px ${items[key].height}px`;
+                    item.textContent = items[key].id.replace('-', ' ');
+                    item.addEventListener('mousedown', (e) => {
+                        e.preventDefault();
+                        if (!isDragging && !isDrawing) {
+                            isDragging = true;
+                            currentItem = key;
+                            const rect = item.getBoundingClientRect();
+                            offsetX = e.clientX - rect.left;
+                            offsetY = e.clientY - rect.top;
+                            draggingItem.style.width = items[key].width + 'px';
+                            draggingItem.style.height = items[key].height + 'px';
+                            draggingItem.style.backgroundImage = `url('${items[key].src}')`;
+                            draggingItem.style.backgroundSize = `${items[key].width}px ${items[key].height}px`;
+                            draggingItem.style.left = (e.clientX - offsetX) + 'px';
+                            draggingItem.style.top = (e.clientY - offsetY) + 'px';
+                            draggingItem.style.display = 'block';
+                            hasDragged = false;
+                        }
+                    });
+                    page.appendChild(item);
+                }
+            });
+        });
+    }
+
+    // Create new layer
+    function createNewLayer() {
+        if (hasTopLayer) return;
+        hasTopLayer = true;
+        const overlay = document.createElement('div');
+        overlay.id = 'layer-overlay';
+        uteTubArea.appendChild(overlay);
+        setActiveLayer('top');
+        document.getElementById('layer-switch').style.display = 'block';
+        document.getElementById('new-layer-btn').disabled = true;
+    }
+
+    // Set active layer and manage object interaction and visibility
+    function setActiveLayer(layer) {
+        activeLayer = layer;
+        const topLayerElements = document.querySelectorAll('.top-layer');
+        const bottomLayerElements = document.querySelectorAll('.bottom-layer');
+        const overlay = document.getElementById('layer-overlay');
+
+        if (layer === 'bottom') {
+            topLayerElements.forEach(el => el.style.display = 'none');
+            if (overlay) overlay.style.display = 'none';
+            bottomLayerElements.forEach(el => {
+                el.style.display = 'block';
+                el.style.pointerEvents = 'auto';
+            });
+            updateGearPanel('bottom');
+        } else {
+            topLayerElements.forEach(el => {
+                el.style.display = 'block';
+                el.style.pointerEvents = 'auto';
+            });
+            bottomLayerElements.forEach(el => {
+                el.style.display = 'block';
+                el.style.pointerEvents = 'none';
+            });
+            if (overlay) overlay.style.display = 'block';
+            updateGearPanel('top');
+        }
+    }
+
+    // Delete top layer
+    function deleteTopLayer() {
+        if (!hasTopLayer) return;
+        Object.values(layers.top.draggedItems).forEach(item => {
+            const itemKey = item.dataset.itemKey;
+            uteTubArea.removeChild(item);
+            topAvailableItems.push(itemKey);
+        });
+        layers.top.customObjects.forEach(obj => uteTubArea.removeChild(obj));
+        layers.top.draggedItems = {};
+        layers.top.customObjects = [];
+        const overlay = document.getElementById('layer-overlay');
+        if (overlay) uteTubArea.removeChild(overlay);
+        setActiveLayer('bottom');
+        document.getElementById('layer-switch').style.display = 'none';
+        document.getElementById('new-layer-btn').disabled = false;
+        hasTopLayer = false;
+    }
+
+    // Save the current project state (bottom layer only)
+    async function saveProject() {
+        const projectName = prompt("Enter a name for your project:");
+        if (!projectName) return;
+
+        const droppedItemsData = Object.values(layers.bottom.draggedItems).map(item => ({
+            itemKey: item.dataset.itemKey,
+            left: parseFloat(item.style.left),
+            top: parseFloat(item.style.top)
+        }));
+        const customObjectsData = layers.bottom.customObjects.map(obj => ({
+            left: parseFloat(obj.style.left),
+            top: parseFloat(obj.style.top),
+            width: parseFloat(obj.style.width),
+            height: parseFloat(obj.style.height),
+            backgroundColor: obj.style.backgroundColor,
+            name: obj.querySelector('.object-name').textContent
+        }));
+        const projectData = {
+            droppedItems: droppedItemsData,
+            customObjects: customObjectsData
+        };
+
+        try {
+            const response = await fetch('/save_project', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: projectName, data: projectData })
+            });
+            if (response.ok) {
+                alert('Project saved successfully!');
+            } else {
+                alert('Failed to save project.');
+            }
+        } catch (error) {
+            console.error('Error saving project:', error);
+            alert('An error occurred while saving the project.');
+        }
+    }
+
+    // Fetch the list of saved projects
+    async function fetchProjectList() {
+        try {
+            const response = await fetch('/get_project_list');
+            if (response.ok) {
+                const projectList = await response.json();
+                const select = document.getElementById('project-select');
+                select.innerHTML = '';
+                projectList.forEach(name => {
+                    const option = document.createElement('option');
+                    option.value = name;
+                    option.textContent = name;
+                    select.appendChild(option);
+                });
+                document.getElementById('load-project-modal').style.display = 'block';
+            } else {
+                alert('Failed to fetch project list.');
+            }
+        } catch (error) {
+            console.error('Error fetching project list:', error);
+            alert('An error occurred while fetching the project list.');
+        }
+    }
+
+    // Load a selected project (bottom layer only)
+    async function loadSelectedProject() {
+        const select = document.getElementById('project-select');
+        const projectName = select.value;
+        if (!projectName) {
+            alert('Please select a project to load.');
+            return;
+        }
+        try {
+            const response = await fetch(`/get_project_data/${encodeURIComponent(projectName)}`);
+            if (response.ok) {
+                const projectData = await response.json();
+                uteTubArea.innerHTML = `
+                    <div class="out-of-bounds" style="left: 0px; top: 18px; width: 79px; height: 275px; border-radius: 30px;"></div>
+                    <div class="out-of-bounds" style="left: 511px; top: 18px; width: 79px; height: 275px; border-radius: 30px;"></div>
+                `;
+                layers.bottom.draggedItems = {};
+                layers.bottom.customObjects = [];
+                layers.top.draggedItems = {};
+                layers.top.customObjects = [];
+                if (hasTopLayer) {
+                    const overlay = document.getElementById('layer-overlay');
+                    if (overlay) uteTubArea.removeChild(overlay);
+                    document.getElementById('layer-switch').style.display = 'none';
+                    document.getElementById('new-layer-btn').disabled = false;
+                    hasTopLayer = false;
+                }
+                setActiveLayer('bottom');
+                bottomAvailableItems = Object.keys(items).slice();
+                projectData.droppedItems.forEach(itemData => {
+                    const { itemKey, left, top } = itemData;
+                    const itemInfo = items[itemKey];
+                    if (itemInfo && bottomAvailableItems.includes(itemKey)) {
+                        const droppedItem = document.createElement('div');
+                        droppedItem.className = 'dropped-item bottom-layer';
+                        droppedItem.id = `${itemKey}-dropped`;
+                        droppedItem.dataset.itemKey = itemKey;
+                        droppedItem.dataset.layer = 'bottom';
+                        droppedItem.style.width = itemInfo.width + 'px';
+                        droppedItem.style.height = itemInfo.height + 'px';
+                        droppedItem.style.backgroundImage = `url('${itemInfo.src}')`;
+                        droppedItem.style.backgroundSize = `${itemInfo.width}px ${itemInfo.height}px`;
+                        droppedItem.style.left = left + 'px';
+                        droppedItem.style.top = top + 'px';
+                        uteTubArea.appendChild(droppedItem);
+                        resolveOverlaps(droppedItem, left, top, itemInfo.width, itemInfo.height);
+                        if (!hasOverlaps(droppedItem)) {
+                            droppedItem.addEventListener('contextmenu', (e) => {
+                                e.preventDefault();
+                                returnItemToGear(e.target, e.target.dataset.itemKey);
+                            });
+                            addItemMovement(droppedItem, itemInfo.width, itemInfo.height);
+                            layers.bottom.draggedItems[itemKey] = droppedItem;
+                            bottomAvailableItems = bottomAvailableItems.filter(k => k !== itemKey);
+                        } else {
+                            uteTubArea.removeChild(droppedItem);
+                        }
+                    }
+                });
+                projectData.customObjects.forEach(objData => {
+                    const { left, top, width, height, backgroundColor, name } = objData;
+                    const customObj = document.createElement('div');
+                    customObj.className = 'custom-object bottom-layer';
+                    customObj.dataset.layer = 'bottom';
+                    customObj.style.left = left + 'px';
+                    customObj.style.top = top + 'px';
+                    customObj.style.width = width + 'px';
+                    customObj.style.height = height + 'px';
+                    customObj.style.backgroundColor = backgroundColor;
+                    const nameSpan = document.createElement('span');
+                    nameSpan.className = 'object-name';
+                    nameSpan.textContent = name;
+                    customObj.appendChild(nameSpan);
+                    const handle = document.createElement('div');
+                    handle.className = 'resize-handle';
+                    customObj.appendChild(handle);
+                    uteTubArea.appendChild(customObj);
+                    resolveOverlaps(customObj, left, top, width, height);
+                    if (!hasOverlaps(customObj)) {
+                        addCustomObjectControls(customObj);
+                        layers.bottom.customObjects.push(customObj);
+                    } else {
+                        uteTubArea.removeChild(customObj);
+                    }
+                });
+                document.getElementById('load-project-modal').style.display = 'none';
+                alert('Project loaded successfully!');
+            } else {
+                alert('Failed to load project data.');
+            }
+        } catch (error) {
+            console.error('Error loading project:', error);
+            alert('An error occurred while loading the project.');
+        }
+    }
+
+    // Handle dragging movement with strict boundary enforcement
+    document.addEventListener('mousemove', (e) => {
+        if (isDragging && typeof currentItem === 'string') {
+            const initialX = parseFloat(draggingItem.style.left);
+            const initialY = parseFloat(draggingItem.style.top);
+            const newX = e.clientX - offsetX;
+            const newY = e.clientY - offsetY;
+
+            if (!hasDragged && (Math.abs(newX - initialX) > 48 || Math.abs(newY - initialY) > 48)) {
+                hasDragged = true;
+            }
+
+            draggingItem.style.left = newX + 'px';
+            draggingItem.style.top = newY + 'px';
+        } else if (isDragging && (currentItem.className.includes('custom-object') || currentItem.className.includes('dropped-item'))) {
+            const tubRect = uteTubArea.getBoundingClientRect();
+            const mouseXInTub = e.clientX - tubRect.left;
+            const mouseYInTub = e.clientY - tubRect.top;
+            let desiredX = mouseXInTub - offsetX;
+            let desiredY = mouseYInTub - offsetY;
+            const width = parseFloat(currentItem.style.width);
+            const height = parseFloat(currentItem.style.height);
+
+            resolveOverlaps(currentItem, desiredX, desiredY, width, height);
+        } else if (isDrawing && currentCustomObject) {
+            const tubRect = uteTubArea.getBoundingClientRect();
+            let mouseX = e.clientX - tubRect.left;
+            let mouseY = e.clientY - tubRect.top;
+
+            let proposedLeft = Math.min(startX, mouseX);
+            let proposedTop = Math.min(startY, mouseY);
+            let proposedRight = Math.max(startX, mouseX);
+            let proposedBottom = Math.max(startY, mouseY);
+
+            proposedLeft = Math.max(0, proposedLeft);
+            proposedTop = Math.max(0, proposedTop);
+            proposedRight = Math.min(TUB_WIDTH, proposedRight);
+            proposedBottom = Math.min(TUB_HEIGHT, proposedBottom);
+
+            const existingObjects = [...Object.values(layers[activeLayer].draggedItems), ...layers[activeLayer].customObjects];
+
+            if (mouseX > startX) {
+                let minLeft = TUB_WIDTH;
+                for (const item of existingObjects) {
+                    const rect = getRect(item);
+                    if (rect.left > startX && rect.top < proposedBottom && rect.bottom > proposedTop) {
+                        minLeft = Math.min(minLeft, rect.left);
+                    }
+                }
+                proposedRight = Math.min(proposedRight, minLeft);
+            }
+
+            if (mouseX < startX) {
+                let maxRight = 0;
+                for (const item of existingObjects) {
+                    const rect = getRect(item);
+                    if (rect.right < startX && rect.top < proposedBottom && rect.bottom > proposedTop) {
+                        maxRight = Math.max(maxRight, rect.right);
+                    }
+                }
+                proposedLeft = Math.max(proposedLeft, maxRight);
+            }
+
+            if (mouseY > startY) {
+                let minTop = TUB_HEIGHT;
+                for (const item of existingObjects) {
+                    const rect = getRect(item);
+                    if (rect.top > startY && rect.left < proposedRight && rect.right > proposedLeft) {
+                        minTop = Math.min(minTop, rect.top);
+                    }
+                }
+                proposedBottom = Math.min(proposedBottom, minTop);
+            }
+
+            if (mouseY < startY) {
+                let maxBottom = 0;
+                for (const item of existingObjects) {
+                    const rect = getRect(item);
+                    if (rect.bottom < startY && rect.left < proposedRight && rect.right > proposedLeft) {
+                        maxBottom = Math.max(maxBottom, rect.bottom);
+                    }
+                }
+                proposedTop = Math.max(proposedTop, maxBottom);
+            }
+
+            if (proposedRight - proposedLeft < 10) {
+                if (mouseX > startX) {
+                    proposedRight = proposedLeft + 10;
+                } else {
+                    proposedLeft = proposedRight - 10;
+                }
+            }
+            if (proposedBottom - proposedTop < 10) {
+                if (mouseY > startY) {
+                    proposedBottom = proposedTop + 10;
+                } else {
+                    proposedTop = proposedBottom - 10;
+                }
+            }
+
+            currentCustomObject.style.left = proposedLeft + 'px';
+            currentCustomObject.style.top = proposedTop + 'px';
+            currentCustomObject.style.width = (proposedRight - proposedLeft) + 'px';
+            currentCustomObject.style.height = (proposedBottom - proposedTop) + 'px';
+        } else if (isResizing) {
+            const deltaX = e.clientX - startX;
+            const deltaY = e.clientY - startY;
+            let proposedWidth = initialWidth + deltaX;
+            let proposedHeight = initialHeight + deltaY;
+            proposedWidth = Math.max(10, Math.min(proposedWidth, maxWidth));
+            proposedHeight = Math.max(10, Math.min(proposedHeight, maxHeight));
+            currentItem.style.width = proposedWidth + 'px';
+            currentItem.style.height = proposedHeight + 'px';
+        }
+    });
+
+    // Handle drop and movement with strict overlap enforcement
+    document.addEventListener('mouseup', (e) => {
+        if (isDragging && typeof currentItem === 'string') {
+            isDragging = false;
+            const itemData = items[currentItem];
+            const tubRect = uteTubArea.getBoundingClientRect();
+            const dragRect = draggingItem.getBoundingClientRect();
+
+            let finalX = dragRect.left - tubRect.left;
+            let finalY = dragRect.top - tubRect.top;
+            const totalWidth = itemData.width;
+            const totalHeight = itemData.height;
+
+            const { clampedX, clampedY } = clampToBoundary(finalX, finalY, totalWidth, totalHeight);
+            finalX = clampedX;
+            finalY = clampedY;
+
+            const isFullyWithinTub = finalX >= 0 && finalX + totalWidth <= TUB_WIDTH &&
+                                    finalY >= 0 && finalY + totalHeight <= TUB_HEIGHT;
+
+            if (hasDragged && isFullyWithinTub && !layers[activeLayer].draggedItems[currentItem]) {
+                const droppedItem = document.createElement('div');
+                droppedItem.className = `dropped-item ${activeLayer}-layer`;
+                droppedItem.id = `${currentItem}-dropped`;
+                droppedItem.dataset.itemKey = currentItem;
+                droppedItem.dataset.layer = activeLayer;
+                droppedItem.style.width = itemData.width + 'px';
+                droppedItem.style.height = itemData.height + 'px';
+                droppedItem.style.backgroundImage = `url('${itemData.src}')`;
+                droppedItem.style.backgroundSize = `${itemData.width}px ${itemData.height}px`;
+                droppedItem.style.left = finalX + 'px';
+                droppedItem.style.top = finalY + 'px';
+
+                uteTubArea.appendChild(droppedItem);
+                resolveOverlaps(droppedItem, finalX, finalY, totalWidth, totalHeight);
+                finalX = parseFloat(droppedItem.style.left);
+                finalY = parseFloat(droppedItem.style.top);
+
+                const isWithinBounds = finalX >= 0 && finalX + totalWidth <= TUB_WIDTH && 
+                                      finalY >= 0 && finalY + totalHeight <= TUB_HEIGHT &&
+                                      !isInCornerRadius(finalX, finalY, totalWidth, totalHeight) &&
+                                      !hasOverlaps(droppedItem);
+
+                if (isWithinBounds) {
+                    droppedItem.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        returnItemToGear(e.target, e.target.dataset.itemKey);
+                    });
+                    addItemMovement(droppedItem, itemData.width, itemData.height);
+                    layers[activeLayer].draggedItems[currentItem] = droppedItem;
+                    if (activeLayer === 'bottom') {
+                        bottomAvailableItems = bottomAvailableItems.filter(k => k !== currentItem);
+                    } else {
+                        topAvailableItems = topAvailableItems.filter(k => k !== currentItem);
+                    }
+                    updateGearPanel(activeLayer);
+                } else {
+                    uteTubArea.removeChild(droppedItem);
+                    console.log('Item not placed: out of bounds, in corner radius, or overlapping');
+                }
+            }
+            draggingItem.style.display = 'none';
+        } else if (isDragging && (currentItem.className.includes('custom-object') || currentItem.className.includes('dropped-item'))) {
+            isDragging = false;
+            const width = parseFloat(currentItem.style.width);
+            const height = parseFloat(currentItem.style.height);
+            const left = parseFloat(currentItem.style.left);
+            const top = parseFloat(currentItem.style.top);
+            resolveOverlaps(currentItem, left, top, width, height);
+            if (hasOverlaps(currentItem)) {
+                currentItem.style.left = currentItem.initialLeft + 'px';
+                currentItem.style.top = currentItem.initialTop + 'px';
+                console.log('Item reverted to initial position due to unresolved overlap');
+            }
+        } else if (isDrawing && currentCustomObject) {
+            isDrawing = false;
+            document.body.style.cursor = 'default';
+            const rect = getRect(currentCustomObject);
+            const width = rect.right - rect.left;
+            const height = rect.bottom - rect.top;
+            resolveOverlaps(currentCustomObject, rect.left, rect.top, width, height);
+            const finalRect = getRect(currentCustomObject);
+            if (isInCornerRadius(finalRect.left, finalRect.top, finalRect.right - finalRect.left, finalRect.bottom - finalRect.top) || hasOverlaps(currentCustomObject)) {
+                uteTubArea.removeChild(currentCustomObject);
+                currentCustomObject = null;
+                console.log('Custom object not placed: overlaps with corner radius or other objects');
+            } else {
+                currentCustomObject.id = `custom-object-${layers[activeLayer].customObjects.length}`;
+                layers[activeLayer].customObjects.push(currentCustomObject);
+                addCustomObjectControls(currentCustomObject);
+                showColorPalette(currentCustomObject);
+                isCustomizing = true;
+                currentCustomObject = null;
+            }
+        } else if (isResizing) {
+            isResizing = false;
+            const width = parseFloat(currentItem.style.width);
+            const height = parseFloat(currentItem.style.height);
+            const left = parseFloat(currentItem.style.left);
+            const top = parseFloat(currentItem.style.top);
+            resolveOverlaps(currentItem, left, top, width, height);
+            if (hasOverlaps(currentItem)) {
+                currentItem.style.width = initialWidth + 'px';
+                currentItem.style.height = initialHeight + 'px';
+                resolveOverlaps(currentItem, left, top, initialWidth, initialHeight);
+                console.log('Resize reverted due to overlap');
+            }
+        }
+    });
+
+    // Custom object creation
+    document.getElementById('custom-object-btn').addEventListener('click', () => {
+        if (!isCustomizing) {
+            isDrawing = true;
+            document.body.style.cursor = 'crosshair';
+        }
+    });
+
+    uteTubArea.addEventListener('mousedown', (e) => {
+        if (isDrawing) {
+            const tubRect = uteTubArea.getBoundingClientRect();
+            startX = e.clientX - tubRect.left;
+            startY = e.clientY - tubRect.top;
+            currentCustomObject = document.createElement('div');
+            currentCustomObject.className = `custom-object ${activeLayer}-layer`;
+            currentCustomObject.dataset.layer = activeLayer;
+            currentCustomObject.style.left = startX + 'px';
+            currentCustomObject.style.top = startY + 'px';
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'object-name';
+            currentCustomObject.appendChild(nameSpan);
+            const handle = document.createElement('div');
+            handle.className = 'resize-handle';
+            currentCustomObject.appendChild(handle);
+            uteTubArea.appendChild(currentCustomObject);
+        }
+    });
+
+    uteTubArea.addEventListener('contextmenu', (e) => {
+        if (isDrawing) {
+            e.preventDefault();
+            isDrawing = false;
+            document.body.style.cursor = 'default';
+            if (currentCustomObject) {
+                uteTubArea.removeChild(currentCustomObject);
+                currentCustomObject = null;
+            }
+        }
+    });
+
+    // Add controls for custom objects
+    function addCustomObjectControls(obj) {
+        addCustomObjectMovement(obj);
+
+        obj.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            uteTubArea.removeChild(obj);
+            const layer = obj.dataset.layer;
+            layers[layer].customObjects = layers[layer].customObjects.filter(item => item !== obj);
+            document.getElementById('controls').style.display = 'none';
+            isCustomizing = false;
+        });
+
+        const handle = obj.querySelector('.resize-handle');
+        handle.addEventListener('mousedown', (e) => {
+            e.stopPropagation();
+            isResizing = true;
+            currentItem = obj;
+            startX = e.clientX;
+            startY = e.clientY;
+            initialWidth = parseFloat(obj.style.width);
+            initialHeight = parseFloat(obj.style.height);
+            const objRect = getRect(obj);
+            maxWidth = TUB_WIDTH - objRect.left;
+            maxHeight = TUB_HEIGHT - objRect.top;
+            const layer = obj.dataset.layer;
+            for (const [key, item] of Object.entries(layers[layer].draggedItems)) {
+                if (item === obj) continue;
+                const otherRect = getRect(item);
+                if (otherRect.left > objRect.left && otherRect.top < objRect.bottom && otherRect.bottom > objRect.top) {
+                    maxWidth = Math.min(maxWidth, otherRect.left - objRect.left);
+                }
+                if (otherRect.top > objRect.top && otherRect.left < objRect.right && otherRect.right > objRect.left) {
+                    maxHeight = Math.min(maxHeight, otherRect.top - objRect.top);
+                }
+            }
+            for (const otherObj of layers[layer].customObjects) {
+                if (otherObj === obj) continue;
+                const otherRect = getRect(otherObj);
+                if (otherRect.left > objRect.left && otherRect.top < objRect.bottom && otherRect.bottom > objRect.top) {
+                    maxWidth = Math.min(maxWidth, otherRect.left - objRect.left);
+                }
+                if (otherRect.top > objRect.top && otherRect.left < objRect.right && otherRect.right > objRect.left) {
+                    maxHeight = Math.min(maxHeight, otherRect.top - objRect.top);
+                }
+            }
+        });
+    }
+
+    function showColorPalette(obj) {
+        const controls = document.getElementById('controls');
+        controls.innerHTML = '';
+        const palette = document.createElement('div');
+        palette.id = 'color-palette';
+        pastelColors.forEach(color => {
+            const option = document.createElement('div');
+            option.className = 'color-option';
+            option.style.backgroundColor = color;
+            option.onclick = () => {
+                obj.style.backgroundColor = color;
+                controls.innerHTML = '';
+                showNameInput(obj);
+            };
+            palette.appendChild(option);
+        });
+        controls.appendChild(palette);
+        controls.style.display = 'flex';
+    }
+
+    function showNameInput(obj) {
+        const controls = document.getElementById('controls');
+        controls.innerHTML = '';
+        const inputContainer = document.createElement('div');
+        inputContainer.style.display = 'flex';
+        inputContainer.style.justifyContent = 'center';
+        inputContainer.style.alignItems = 'center';
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.placeholder = 'Enter object name';
+        input.style.marginRight = '10px';
+        const submitBtn = document.createElement('button');
+        submitBtn.textContent = 'Set Name';
+        submitBtn.onclick = () => {
+            setObjectName(obj, input.value.trim());
+        };
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                setObjectName(obj, input.value.trim());
+            }
+        });
+        inputContainer.appendChild(input);
+        inputContainer.appendChild(submitBtn);
+        controls.appendChild(inputContainer);
+        controls.style.display = 'flex';
+        input.focus();
+    }
+
+    function setObjectName(obj, name) {
+        if (name) {
+            obj.querySelector('.object-name').textContent = name;
+            obj.title = name;
+        }
+        document.getElementById('controls').innerHTML = '';
+        document.getElementById('controls').style.display = 'none';
+        isCustomizing = false;
+    }
+
+    function addCustomObjectMovement(obj) {
+        obj.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            if (e.button === 0 && !isResizing) {
+                isDragging = true;
+                currentItem = obj;
+                const tubRect = uteTubArea.getBoundingClientRect();
+                const mouseXInTub = e.clientX - tubRect.left;
+                const mouseYInTub = e.clientY - tubRect.top;
+                offsetX = mouseXInTub - parseFloat(obj.style.left);
+                offsetY = mouseYInTub - parseFloat(obj.style.top);
+                currentItem.initialLeft = parseFloat(obj.style.left);
+                currentItem.initialTop = parseFloat(obj.style.top);
+            }
+        });
+    }
+
+    function addItemMovement(element, width, height) {
+        element.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            if (e.button === 0) {
+                isDragging = true;
+                currentItem = element;
+                const tubRect = uteTubArea.getBoundingClientRect();
+                const mouseXInTub = e.clientX - tubRect.left;
+                const mouseYInTub = e.clientY - tubRect.top;
+                offsetX = mouseXInTub - parseFloat(element.style.left);
+                offsetY = mouseYInTub - parseFloat(element.style.top);
+                currentItem.initialLeft = parseFloat(element.style.left);
+                currentItem.initialTop = parseFloat(element.style.top);
+            }
+        });
+    }
+
+    function returnItemToGear(element, itemKey) {
+        const layer = element.dataset.layer;
+        if (layers[layer].draggedItems[itemKey]) {
+            uteTubArea.removeChild(layers[layer].draggedItems[itemKey]);
+            delete layers[layer].draggedItems[itemKey];
+            if (layer === 'bottom') {
+                bottomAvailableItems.push(itemKey);
+            } else {
+                topAvailableItems.push(itemKey);
+            }
+            if (activeLayer === layer) {
+                updateGearPanel(activeLayer);
+            }
+        }
+    }
+
+    // Page navigation
+    function updatePage() {
+        const pagesContainer = document.getElementById('pages-container');
+        pagesContainer.style.transform = `translateX(-${currentPage * 250}px)`;
+        circles.forEach((circle, index) => {
+            circle.classList.toggle('active', index === currentPage);
+        });
+    }
+
+    // Event listeners
+    document.getElementById('new-layer-btn').addEventListener('click', createNewLayer);
+    document.getElementById('bottom-layer-btn').addEventListener('click', () => setActiveLayer('bottom'));
+    document.getElementById('top-layer-btn').addEventListener('click', () => setActiveLayer('top'));
+    document.getElementById('delete-top-layer-btn').addEventListener('click', deleteTopLayer);
+    document.getElementById('left-arrow').addEventListener('click', () => {
+        currentPage = (currentPage - 1 + pages.length) % pages.length;
+        updatePage();
+    });
+    document.getElementById('right-arrow').addEventListener('click', () => {
+        currentPage = (currentPage + 1) % pages.length;
+        updatePage();
+    });
+    circles.forEach((circle, index) => {
+        circle.addEventListener('click', () => {
+            currentPage = index;
+            updatePage();
+        });
+    });
+    document.getElementById('save-project-btn').addEventListener('click', saveProject);
+    document.getElementById('load-project-btn').addEventListener('click', fetchProjectList);
+    document.getElementById('load-selected-project').addEventListener('click', loadSelectedProject);
+    document.getElementById('close-load-modal').addEventListener('click', () => {
+        document.getElementById('load-project-modal').style.display = 'none';
+    });
+
+    // Initialize
+    updateGearPanel('bottom');
+    updatePage();
+</script>
+</body>
+</html>

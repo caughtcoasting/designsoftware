@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Vehicle Layout Designer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #e0e7ff, #f0f7f4);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+        }
+        h1 {
+            font-size: 2.5em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        p {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .container {
+            display: flex;
+            justify-content: space-around;
+            width: 800px;
+            max-width: 90%;
+        }
+        .section {
+            background: white;
+            width: 350px;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+        .section:hover {
+            transform: scale(1.05);
+        }
+        .section img {
+            width: 100%;
+            height: auto;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        .section h2 {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #006600;
+            color: white;
+            text-decoration: none;
+            border-radius: 3px;
+            font-size: 1em;
+            cursor: pointer;
+            border: none;
+        }
+        .button:hover {
+            background: #004d00;
+        }
+        #work-in-progress {
+            display: none;
+            font-size: 1.5em;
+            color: #666;
+            max-width: 600px;
+            margin: 20px auto;
+        }
+    </style>
+</head>
+<body>
+    <div id="main-content">
+        <h1>Welcome to the Vehicle Layout Designer</h1>
+        <p>Please select what you would like to design:</p>
+        <div id="selection-container" class="container">
+            <div class="section">
+                <h2>Ute Tub</h2>
+                <img src="ute_tub.jpg" alt="Ute Tub Image">
+                <a href="ute_tub.html" class="button">Design Ute Tub</a>
+            </div>
+            <div class="section">
+                <h2>Tray Canopy</h2>
+                <img src="tray_canopy.jpg" alt="Tray Canopy Image">
+                <button id="tray-canopy-button" class="button">Design Tray Canopy</button>
+            </div>
+        </div>
+        <div id="work-in-progress">
+            Sorry, the tray canopy design feature is currently under development. Please check back later!
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('tray-canopy-button').addEventListener('click', function() {
+            document.getElementById('selection-container').style.display = 'none';
+            document.getElementById('work-in-progress').style.display = 'block';
+        });
+    </script>
+</body>
+</html>

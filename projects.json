@@ -1,0 +1,21 @@
+{
+  "tester": {
+    "droppedItems": [
+      {
+        "itemKey": "battery",
+        "left": 73,
+        "top": 0
+      }
+    ],
+    "customObjects": [
+      {
+        "left": 146,
+        "top": 0,
+        "width": 129,
+        "height": 137,
+        "backgroundColor": "rgb(186, 255, 201)",
+        "name": "test"
+      }
+    ]
+  }
+}
